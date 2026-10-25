@@ -76,8 +76,8 @@ sudo apt install "./vscode-search-provider_${VERSION}_all.deb"
 ```
 
 `sha256sum -c` checks the file arrived intact. The optional `gh attestation
-verify` also proves it was built by this repo's release workflow from the
-tagged commit. Then **log out and back in once**.
+verify` (needs gh 2.49 or newer) also proves it was built by this repo's
+release workflow from the tagged commit. Then **log out and back in once**.
 
 ### From source
 
