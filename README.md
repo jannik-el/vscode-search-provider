@@ -1,6 +1,11 @@
 # vscode-search-provider
 
 [![CI](https://github.com/jannik-el/vscode-search-provider/actions/workflows/ci.yml/badge.svg)](https://github.com/jannik-el/vscode-search-provider/actions/workflows/ci.yml)
+[![Release](https://img.shields.io/github/v/release/jannik-el/vscode-search-provider?label=release)](https://github.com/jannik-el/vscode-search-provider/releases/latest)
+[![GNOME](https://img.shields.io/badge/GNOME-46%20%E2%80%93%2050-4a86cf?logo=gnome&logoColor=white)](#compatibility)
+[![apt repo](https://img.shields.io/badge/apt-jannik--el.github.io-a80030?logo=debian&logoColor=white)](https://jannik-el.github.io/vscode-search-provider/)
+
+Current version: **1.0.0** ([changelog](CHANGELOG.md)).
 
 A GNOME Shell search provider that shows recently opened VS Code folders and
 workspaces in the overview and in Search Light, and opens them in VS Code.
@@ -14,11 +19,17 @@ idle minutes. Nothing runs in the background otherwise.
 
 ## Compatibility
 
-| GNOME Shell | Status |
-| --- | --- |
-| 50 | Tested (Ubuntu, Wayland, snap VS Code, GLib 2.88, gjs 1.88) |
-| 46–49 | Expected to work, not tested |
-| 45 and older | Not supported |
+| GNOME Shell | Ubuntu | gjs / GLib | Status |
+| --- | --- | --- | --- |
+| 50 | 26.04 | 1.88 / 2.88 | Tested in CI, and by hand on a Wayland desktop with snap VS Code |
+| 47–49 | 24.10–25.10 | between the two | Expected to work, not tested |
+| 46 | 24.04 | 1.80 / 2.80 | Tested in CI |
+| 45 and older | 23.10 and older | | Not supported |
+
+[CI](.github/workflows/ci.yml) runs `make check` in an Ubuntu container for
+each tested version on every push. That runs the provider on that release's
+gjs and GLib and checks its D-Bus answers. It doesn't start GNOME Shell
+itself, but the shell's side of the protocol hasn't changed in years.
 
 The lower bound comes from the `gi://GioUnix` import, which needs GLib 2.80
 (GNOME 46, Ubuntu 24.04). The `org.gnome.Shell.SearchProvider2` interface
@@ -152,14 +163,16 @@ Changes are listed in [`CHANGELOG.md`](CHANGELOG.md).
 - **Minor:** new features, such as new result sources or settings.
 - **Patch:** fixes that leave the D-Bus interface and installed paths alone.
 
-To release: bump `VERSION`, add a `CHANGELOG.md` entry, commit, then
+To release: bump `VERSION`, add a `CHANGELOG.md` entry, update the "Current
+version" line at the top, commit, then
 
 ```sh
 make release
 git push origin main v$(cat VERSION)
 ```
 
-`make release` refuses to tag without a changelog entry or with uncommitted
+`make release` refuses to tag without a changelog entry, without the new
+version in the "Current version" line at the top of this README, or with uncommitted
 changes. Pushing the tag runs the release workflow, which checks the tag
 matches `VERSION`, builds and tests the package, and publishes the GitHub
 Release with the `.deb`, `SHA256SUMS`, the changelog entry as notes and an

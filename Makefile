@@ -57,6 +57,7 @@ clean-legacy:
 # tree is committed. Push with: git push origin main v$(VERSION)
 release:
 	grep -q '^## \[$(VERSION)\]' CHANGELOG.md || { echo "CHANGELOG.md has no entry for $(VERSION)"; exit 1; }
+	grep -q 'Current version: \*\*$(VERSION)\*\*' README.md || { echo "README.md does not say Current version: **$(VERSION)**"; exit 1; }
 	git diff --quiet HEAD || { echo "Commit your changes first"; exit 1; }
 	git tag -a v$(VERSION) -m "v$(VERSION)"
 

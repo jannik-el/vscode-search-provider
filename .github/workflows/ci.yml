@@ -27,6 +27,11 @@ jobs:
           DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
             make gjs dbus-daemon libglib2.0-bin gnupg
 
+      - name: Show tested runtime versions
+        run: |
+          gjs --version
+          dpkg-query -W gir1.2-glib-2.0
+
       - name: Build package and smoke-test over D-Bus
         run: make check
 
