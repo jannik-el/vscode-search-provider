@@ -46,7 +46,9 @@ else
 fi
 
 # Change the index after signing: apt must refuse it.
+# Alter both index files; apt may fetch either one.
 echo "Tampered: yes" >> "$TMP/repo/Packages"
+gzip -9nkf "$TMP/repo/Packages"
 rm -rf "$TMP/lists"; mkdir -p "$TMP/lists/partial"
 # shellcheck disable=SC2086
 if apt-get $APT update 2>&1 | grep -q 'Hash Sum mismatch\|File has unexpected size\|^E:'; then
