@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>vscode-search-provider apt repository</title>
+<style>
+  body { font: 16px/1.5 system-ui, sans-serif; max-width: 46rem; margin: 2rem auto; padding: 0 1rem; }
+  pre { background: #f4f4f4; padding: 1rem; overflow-x: auto; }
+  @media (prefers-color-scheme: dark) { body { background: #1e1e1e; color: #ddd; } pre { background: #2a2a2a; } a { color: #8ab4f8; } }
+</style>
+</head>
+<body>
+<h1>vscode-search-provider apt repository</h1>
+<p>GNOME Shell search provider for recent VS Code projects.
+Source and docs: <a href="https://github.com/jannik-el/vscode-search-provider">github.com/jannik-el/vscode-search-provider</a>.</p>
+<pre>sudo curl -fsSLo /usr/share/keyrings/vscode-search-provider.gpg \
+  https://jannik-el.github.io/vscode-search-provider/vscode-search-provider.gpg
+printf '%s\n' 'Types: deb' \
+  'URIs: https://jannik-el.github.io/vscode-search-provider/' \
+  'Suites: ./' \
+  'Signed-By: /usr/share/keyrings/vscode-search-provider.gpg' |
+  sudo tee /etc/apt/sources.list.d/vscode-search-provider.sources
+sudo apt update
+sudo apt install vscode-search-provider</pre>
+<p>Then log out and back in once. Check the key fingerprint matches <a href="https://github.com/jannik-el/vscode-search-provider/blob/main/vscode-search-provider.asc">the key in the source repo</a>:
+<code>gpg --show-keys /usr/share/keyrings/vscode-search-provider.gpg</code></p>
+</body>
+</html>

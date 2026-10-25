@@ -25,7 +25,7 @@ jobs:
         run: |
           apt-get update
           DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
-            make gjs dbus-daemon libglib2.0-bin
+            make gjs dbus-daemon libglib2.0-bin gnupg
 
       - name: Build package and smoke-test over D-Bus
         run: make check

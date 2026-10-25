@@ -36,6 +36,29 @@ entries are kept. Every search term must match the folder name or path
 
 ## Install
 
+### From the apt repository (recommended)
+
+A signed apt repository on GitHub Pages carries every release, so
+`apt upgrade` keeps the provider up to date:
+
+```sh
+sudo curl -fsSLo /usr/share/keyrings/vscode-search-provider.gpg \
+  https://jannik-el.github.io/vscode-search-provider/vscode-search-provider.gpg
+printf '%s\n' 'Types: deb' \
+  'URIs: https://jannik-el.github.io/vscode-search-provider/' \
+  'Suites: ./' \
+  'Signed-By: /usr/share/keyrings/vscode-search-provider.gpg' |
+  sudo tee /etc/apt/sources.list.d/vscode-search-provider.sources
+sudo apt update
+sudo apt install vscode-search-provider
+```
+
+apt checks the repository's signature and every package's SHA256 on each
+update. To check the key itself, compare the fingerprint from
+`gpg --show-keys /usr/share/keyrings/vscode-search-provider.gpg` with
+`gpg --show-keys vscode-search-provider.asc` in this repo. Then **log out and
+back in once**.
+
 ### From a release
 
 Each [GitHub Release](https://github.com/jannik-el/vscode-search-provider/releases)
@@ -139,7 +162,16 @@ git push origin main v$(cat VERSION)
 changes. Pushing the tag runs the release workflow, which checks the tag
 matches `VERSION`, builds and tests the package, and publishes the GitHub
 Release with the `.deb`, `SHA256SUMS`, the changelog entry as notes and an
-attestation.
+attestation. It then downloads the packages of all releases, checks each
+against its `SHA256SUMS`, rebuilds the apt repository with
+[`tools/apt-repo.sh`](tools/apt-repo.sh), signs it, and deploys it to GitHub
+Pages. Running the Release workflow by hand only re-publishes the apt repo.
+
+The apt repo needs a one-time setup by the maintainer:
+[`tools/setup-apt-signing.sh`](tools/setup-apt-signing.sh) creates the signing
+key, stores it as the `APT_SIGNING_KEY` secret, writes the public key to
+`vscode-search-provider.asc` (commit it), and switches Pages to deploy from
+Actions.
 
 ## Testing
 

@@ -34,10 +34,12 @@ $(DEB): VERSION src/searchProvider.js data/*.in debian/control.in Makefile
 	chmod -R u=rwX,go=rX $(STAGE)
 	dpkg-deb --root-owner-group --build $(STAGE) $@
 
-# Smoke-test the source and the packaged copy on a private session bus.
+# Smoke-test the source and the packaged copy on a private session bus, and
+# the apt repository tooling with a throwaway key.
 check: $(DEB)
 	tests/smoke.sh src/searchProvider.js
 	tests/smoke.sh $(STAGE)$(SCRIPT)
+	tests/apt.sh $(DEB)
 
 # The one sudo step: apt installs the package system-wide.
 install: $(DEB)

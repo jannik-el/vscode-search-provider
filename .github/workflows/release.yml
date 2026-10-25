@@ -1,18 +1,22 @@
 name: Release
 
 # Pushing a tag vX.Y.Z (see `make release`) builds, tests and publishes the
-# .deb to a GitHub Release with SHA256SUMS and a build provenance attestation.
+# .deb to a GitHub Release with SHA256SUMS and a build provenance attestation,
+# then rebuilds the signed apt repository on GitHub Pages from all releases.
 on:
   push:
     tags: ["v*.*.*"]
+  workflow_dispatch: # re-publish the apt repo without a new release
 
 permissions:
   contents: write
   id-token: write
   attestations: write
+  pages: write
 
 jobs:
   release:
+    if: github.event_name == 'push'
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
@@ -28,7 +32,7 @@ jobs:
       - name: Install build and test dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y --no-install-recommends gjs dbus-daemon libglib2.0-bin
+          sudo apt-get install -y --no-install-recommends gjs dbus-daemon libglib2.0-bin gnupg
 
       - name: Build package and smoke-test over D-Bus
         run: make check
@@ -56,3 +60,45 @@ jobs:
           gh release create "$GITHUB_REF_NAME" \
             build/vscode-search-provider_*_all.deb build/SHA256SUMS \
             --title "$GITHUB_REF_NAME" --notes-file build/notes.md --verify-tag
+
+  apt-repo:
+    needs: release
+    # Also run on manual dispatch, when the release job is skipped.
+    if: ${{ !failure() && !cancelled() }}
+    runs-on: ubuntu-24.04
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download and verify all released packages
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir debs
+          for tag in $(gh release list --limit 1000 --json tagName --jq '.[].tagName'); do
+            mkdir "dl-$tag"
+            gh release download "$tag" --dir "dl-$tag" --pattern '*.deb' --pattern SHA256SUMS
+            (cd "dl-$tag" && sha256sum -c SHA256SUMS)
+            mv "dl-$tag"/*.deb debs/
+          done
+          ls -l debs
+
+      - name: Build signed apt repository
+        env:
+          APT_SIGNING_KEY: ${{ secrets.APT_SIGNING_KEY }}
+        run: |
+          test -n "$APT_SIGNING_KEY" || {
+            echo "::error::APT_SIGNING_KEY secret missing; run tools/setup-apt-signing.sh"; exit 1; }
+          export GNUPGHOME=$(mktemp -d)
+          printf '%s\n' "$APT_SIGNING_KEY" | gpg --batch --import
+          tools/apt-repo.sh site debs/*.deb
+          cp tools/apt-index.html site/index.html
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+
+      - id: deploy
+        uses: actions/deploy-pages@v4
