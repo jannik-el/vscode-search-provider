@@ -1,0 +1,11 @@
+Package: vscode-search-provider
+Version: @VERSION@
+Architecture: all
+Maintainer: jannik-el <jannik.elsaesser@gmx.net>
+Depends: gjs, gnome-shell
+Section: gnome
+Priority: optional
+Description: GNOME Shell search provider for recent VS Code projects
+ Shows recently opened VS Code folders and workspaces in the GNOME overview
+ and Search Light, and opens them in VS Code. D-Bus activated; it starts on
+ the first search and exits after two idle minutes.

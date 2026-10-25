@@ -1,0 +1,5 @@
+[Shell Search Provider]
+DesktopId=@DESKTOP_ID@
+BusName=@BUS_NAME@
+ObjectPath=@OBJECT_PATH@
+Version=2
