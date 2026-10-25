@@ -1,5 +1,7 @@
 # vscode-search-provider
 
+[![CI](https://github.com/jannik-el/vscode-search-provider/actions/workflows/ci.yml/badge.svg)](https://github.com/jannik-el/vscode-search-provider/actions/workflows/ci.yml)
+
 A GNOME Shell search provider that shows recently opened VS Code folders and
 workspaces in the overview and in Search Light, and opens them in VS Code.
 
@@ -33,6 +35,27 @@ entries are kept. Every search term must match the folder name or path
 (case-insensitive). Results open through the VS Code `.desktop` file.
 
 ## Install
+
+### From a release
+
+Each [GitHub Release](https://github.com/jannik-el/vscode-search-provider/releases)
+has the `.deb`, a `SHA256SUMS` file and a signed build provenance
+attestation. Download, verify, install:
+
+```sh
+VERSION=1.0.0
+BASE=https://github.com/jannik-el/vscode-search-provider/releases/download/v$VERSION
+curl -fLO "$BASE/vscode-search-provider_${VERSION}_all.deb" -fLO "$BASE/SHA256SUMS"
+sha256sum -c SHA256SUMS
+gh attestation verify "vscode-search-provider_${VERSION}_all.deb" --repo jannik-el/vscode-search-provider
+sudo apt install "./vscode-search-provider_${VERSION}_all.deb"
+```
+
+`sha256sum -c` checks the file arrived intact. The optional `gh attestation
+verify` also proves it was built by this repo's release workflow from the
+tagged commit. Then **log out and back in once**.
+
+### From source
 
 ```sh
 make install
@@ -113,12 +136,29 @@ git push origin main v$(cat VERSION)
 ```
 
 `make release` refuses to tag without a changelog entry or with uncommitted
-changes.
+changes. Pushing the tag runs the release workflow, which checks the tag
+matches `VERSION`, builds and tests the package, and publishes the GitHub
+Release with the `.deb`, `SHA256SUMS`, the changelog entry as notes and an
+attestation.
 
 ## Testing
 
-Run the service from the source tree (stop an installed instance first) and
-query it:
+```sh
+make check
+```
+
+builds the package and runs [`tests/smoke.sh`](tests/smoke.sh) against both
+the source and the packaged script. The test starts a private session bus
+with no service directories, so it never touches the real bus or an
+installed copy. It feeds a fake `workspaceStorage` and checks search, ranking,
+multi-term matching, skipping of missing folders, and result metas.
+
+[CI](.github/workflows/ci.yml) runs `make check` on every push and pull request
+in Ubuntu 24.04 (GNOME 46, the oldest supported) and 26.04 (GNOME 50)
+containers, and checks the package's dependencies resolve there.
+
+To poke at it by hand, run the service from the source tree (stop an
+installed instance first) and query it:
 
 ```sh
 make run

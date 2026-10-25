@@ -1,0 +1,58 @@
+name: Release
+
+# Pushing a tag vX.Y.Z (see `make release`) builds, tests and publishes the
+# .deb to a GitHub Release with SHA256SUMS and a build provenance attestation.
+on:
+  push:
+    tags: ["v*.*.*"]
+
+permissions:
+  contents: write
+  id-token: write
+  attestations: write
+
+jobs:
+  release:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check tag matches VERSION and CHANGELOG
+        run: |
+          version=$(cat VERSION)
+          test "$GITHUB_REF_NAME" = "v$version" || {
+            echo "::error::Tag $GITHUB_REF_NAME does not match VERSION $version"; exit 1; }
+          grep -q "^## \[$version\]" CHANGELOG.md || {
+            echo "::error::CHANGELOG.md has no entry for $version"; exit 1; }
+
+      - name: Install build and test dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends gjs dbus-daemon libglib2.0-bin
+
+      - name: Build package and smoke-test over D-Bus
+        run: make check
+
+      - name: Write checksums and release notes
+        working-directory: build
+        run: |
+          sha256sum vscode-search-provider_*_all.deb > SHA256SUMS
+          cat SHA256SUMS
+          version=$(cat ../VERSION)
+          awk -v v="$version" '
+            $0 ~ "^## \\[" v "\\]" { on = 1; next }
+            on && /^(## |\[)/ { exit }
+            on { print }
+          ' ../CHANGELOG.md > notes.md
+
+      - uses: actions/attest-build-provenance@v2
+        with:
+          subject-path: build/vscode-search-provider_*_all.deb
+
+      - name: Publish GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" \
+            build/vscode-search-provider_*_all.deb build/SHA256SUMS \
+            --title "$GITHUB_REF_NAME" --notes-file build/notes.md --verify-tag

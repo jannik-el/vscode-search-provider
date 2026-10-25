@@ -19,7 +19,7 @@ SUBST = sed -e 's|@BUS_NAME@|$(BUS_NAME)|g' -e 's|@OBJECT_PATH@|$(OBJECT_PATH)|g
             -e 's|@DESKTOP_ID@|$(DESKTOP_ID)|g' -e 's|@SCRIPT@|$(SCRIPT)|g' \
             -e 's|@VERSION@|$(VERSION)|g'
 
-.PHONY: deb install uninstall clean-legacy release run clean
+.PHONY: deb check install uninstall clean-legacy release run clean
 
 deb: $(DEB)
 
@@ -33,6 +33,11 @@ $(DEB): VERSION src/searchProvider.js data/*.in debian/control.in Makefile
 	$(SUBST) debian/control.in > $(STAGE)/DEBIAN/control
 	chmod -R u=rwX,go=rX $(STAGE)
 	dpkg-deb --root-owner-group --build $(STAGE) $@
+
+# Smoke-test the source and the packaged copy on a private session bus.
+check: $(DEB)
+	tests/smoke.sh src/searchProvider.js
+	tests/smoke.sh $(STAGE)$(SCRIPT)
 
 # The one sudo step: apt installs the package system-wide.
 install: $(DEB)

@@ -13,5 +13,7 @@ All notable changes to this project are documented here. The format follows
 - `.deb` packaging with `make deb`, `make install` and `make uninstall`.
 - Bus name `io.github.jannik_el.VSCodeSearchProvider`; `make install` removes
   the files of the earlier unpackaged `local.vscode.SearchProvider` setup.
+- D-Bus smoke test (`make check`), CI on Ubuntu 24.04 and 26.04, and a release
+  workflow publishing the `.deb` with `SHA256SUMS` and a build attestation.
 
 [1.0.0]: https://github.com/jannik-el/vscode-search-provider/releases/tag/v1.0.0
