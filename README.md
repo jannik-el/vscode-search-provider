@@ -56,8 +56,9 @@ sudo apt install vscode-search-provider
 apt checks the repository's signature and every package's SHA256 on each
 update. To check the key itself, compare the fingerprint from
 `gpg --show-keys /usr/share/keyrings/vscode-search-provider.gpg` with
-`gpg --show-keys vscode-search-provider.asc` in this repo. Then **log out and
-back in once**.
+`gpg --show-keys vscode-search-provider.asc` in this repo:
+`A384 C9D2 3628 1BEF 997C  DE52 E4EF D9E4 77DA 917E`. Then **log out and back
+in once**.
 
 ### From a release
 
