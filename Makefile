@@ -1,5 +1,5 @@
 NAME        := vscode-search-provider
-VERSION     := 1.0.0
+VERSION     := $(shell cat VERSION)
 BUS_NAME    := io.github.jannik_el.VSCodeSearchProvider
 OBJECT_PATH := /io/github/jannik_el/VSCodeSearchProvider
 # code_code.desktop = snap VS Code; use code.desktop for the .deb/apt build.
@@ -19,11 +19,11 @@ SUBST = sed -e 's|@BUS_NAME@|$(BUS_NAME)|g' -e 's|@OBJECT_PATH@|$(OBJECT_PATH)|g
             -e 's|@DESKTOP_ID@|$(DESKTOP_ID)|g' -e 's|@SCRIPT@|$(SCRIPT)|g' \
             -e 's|@VERSION@|$(VERSION)|g'
 
-.PHONY: deb install uninstall clean-legacy run clean
+.PHONY: deb install uninstall clean-legacy release run clean
 
 deb: $(DEB)
 
-$(DEB): src/searchProvider.js data/*.in debian/control.in Makefile
+$(DEB): VERSION src/searchProvider.js data/*.in debian/control.in Makefile
 	rm -rf $(STAGE)
 	install -Dm644 src/searchProvider.js $(STAGE)$(SCRIPT)
 	sed -i 's|^const DESKTOP_ID = .*|const DESKTOP_ID = "$(DESKTOP_ID)";|' $(STAGE)$(SCRIPT)
@@ -45,6 +45,13 @@ uninstall:
 clean-legacy:
 	rm -rf $(LEGACY_USER)
 	if [ -e $(LEGACY_SYS) ]; then sudo rm -f $(LEGACY_SYS); fi
+
+# Tag the version in VERSION after checking it has a CHANGELOG entry and the
+# tree is committed. Push with: git push origin main v$(VERSION)
+release:
+	grep -q '^## \[$(VERSION)\]' CHANGELOG.md || { echo "CHANGELOG.md has no entry for $(VERSION)"; exit 1; }
+	git diff --quiet HEAD || { echo "Commit your changes first"; exit 1; }
+	git tag -a v$(VERSION) -m "v$(VERSION)"
 
 # Run from the source tree for testing (stop any installed instance first).
 run:

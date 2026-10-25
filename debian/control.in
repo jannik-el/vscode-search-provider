@@ -2,7 +2,7 @@ Package: vscode-search-provider
 Version: @VERSION@
 Architecture: all
 Maintainer: jannik-el <jannik.elsaesser@gmx.net>
-Depends: gjs, gnome-shell
+Depends: gjs (>= 1.80), gir1.2-glib-2.0 (>= 2.80), gnome-shell (>= 46)
 Section: gnome
 Priority: optional
 Description: GNOME Shell search provider for recent VS Code projects

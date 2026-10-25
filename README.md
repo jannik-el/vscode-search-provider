@@ -9,7 +9,19 @@ idle minutes. Nothing runs in the background otherwise.
 
 - Bus name: `io.github.jannik_el.VSCodeSearchProvider`
 - Object path: `/io/github/jannik_el/VSCodeSearchProvider`
-- Tested on Ubuntu, GNOME Shell 50, Wayland, snap VS Code.
+
+## Compatibility
+
+| GNOME Shell | Status |
+| --- | --- |
+| 50 | Tested (Ubuntu, Wayland, snap VS Code, GLib 2.88, gjs 1.88) |
+| 46–49 | Expected to work, not tested |
+| 45 and older | Not supported |
+
+The lower bound comes from the `gi://GioUnix` import, which needs GLib 2.80
+(GNOME 46, Ubuntu 24.04). The `org.gnome.Shell.SearchProvider2` interface
+itself hasn't changed in years. The `.deb` encodes this as
+`Depends: gjs (>= 1.80), gir1.2-glib-2.0 (>= 2.80), gnome-shell (>= 46)`.
 
 ## How it finds projects
 
@@ -81,6 +93,27 @@ gsettings get org.gnome.desktop.search-providers sort-order
 ```
 
 and add `'code_code.desktop'` at the front with `gsettings set`.
+
+## Versioning
+
+The project follows [Semantic Versioning](https://semver.org). The version
+lives in [`VERSION`](VERSION) and goes into the package name and metadata.
+Changes are listed in [`CHANGELOG.md`](CHANGELOG.md).
+
+- **Major:** anything that needs a re-login or breaks existing setups, such as
+  a new bus name or object path, or dropping a GNOME version.
+- **Minor:** new features, such as new result sources or settings.
+- **Patch:** fixes that leave the D-Bus interface and installed paths alone.
+
+To release: bump `VERSION`, add a `CHANGELOG.md` entry, commit, then
+
+```sh
+make release
+git push origin main v$(cat VERSION)
+```
+
+`make release` refuses to tag without a changelog entry or with uncommitted
+changes.
 
 ## Testing
 
